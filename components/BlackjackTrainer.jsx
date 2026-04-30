@@ -234,7 +234,7 @@ export default function BlackjackTrainer() {
   // ── CHART RENDERER ──
   const renderChart = (rows) => (
     <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch" }}>
-      <table style={{ borderCollapse:"collapse", fontSize:10.5, minWidth:310 }}>
+      <table style={{ borderCollapse:"collapse", fontSize:"clamp(10.5px,1.3vw,15px)", minWidth:310 }}>
         <thead>
           <tr>
             <th style={{ padding:"3px 8px", color:"#444", textAlign:"left", fontWeight:700, fontSize:9, letterSpacing:"0.1em" }}>HAND</th>
@@ -281,8 +281,8 @@ export default function BlackjackTrainer() {
 
       {/* Header */}
       <div style={{ textAlign:"center", marginBottom:18 }}>
-        <div style={{ fontSize:9, letterSpacing:"0.5em", color:"#4fffb0", marginBottom:4 }}>HI-LO · BASIC STRATEGY · DEVIATIONS</div>
-        <h1 style={{ fontSize:22, fontWeight:900, margin:0, letterSpacing:"-0.02em" }}>
+        <div style={{ fontSize:"clamp(9px,1.2vw,14px)", letterSpacing:"0.5em", color:"#4fffb0", marginBottom:4 }}>HI-LO · BASIC STRATEGY · DEVIATIONS</div>
+        <h1 style={{ fontSize:"clamp(22px,3.8vw,52px)", fontWeight:900, margin:0, letterSpacing:"-0.02em" }}>
           BLACKJACK <span style={{ color:"#4fffb0" }}>TRAINER</span>
         </h1>
       </div>
@@ -291,10 +291,10 @@ export default function BlackjackTrainer() {
       <div style={{ display:"flex", gap:5, marginBottom:18, background:"#0d1810", borderRadius:8, padding:3 }}>
         {MODES.map(m=>(
           <button key={m} onClick={()=>setMode(m)} style={{
-            padding:"7px 14px", borderRadius:6, border:"none", cursor:"pointer",
+            padding:"clamp(7px,1.2vh,12px) clamp(14px,2.5vw,26px)", borderRadius:6, border:"none", cursor:"pointer",
             background:mode===m?"#4fffb0":"transparent",
             color:mode===m?"#070c0a":"#555",
-            fontFamily:"'Courier New', monospace", fontWeight:900, fontSize:10, letterSpacing:"0.1em",
+            fontFamily:"'Courier New', monospace", fontWeight:900, fontSize:"clamp(10px,1.4vw,15px)", letterSpacing:"0.1em",
             transition:"all 0.2s",
           }}>{m.toUpperCase()}</button>
         ))}
@@ -302,17 +302,17 @@ export default function BlackjackTrainer() {
 
       {/* ═══════════════ COUNT MODE ═══════════════ */}
       {mode==="Count" && (
-        <div style={{ width:"100%", maxWidth:450 }}>
-          <div style={{ display:"flex", gap:14, marginBottom:16, fontSize:10, justifyContent:"center" }}>
+        <div style={{ width:"100%", maxWidth:"min(720px,95vw)" }}>
+          <div style={{ display:"flex", gap:14, marginBottom:16, fontSize:"clamp(10px,1.4vw,16px)", justifyContent:"center" }}>
             <span style={{ color:"#333" }}>CORRECT: <span style={{ color:"#4fffb0" }}>{countScore.correct}/{countScore.total}</span></span>
             {cAcc!==null && <span style={{ color:"#333" }}>ACC: <span style={{ color:cAcc>=80?"#4fffb0":cAcc>=60?"#ffd700":"#ff5577" }}>{cAcc}%</span></span>}
             <span style={{ color:"#333" }}>STREAK: <span style={{ color:"#ffd700" }}>{streak}</span></span>
           </div>
           <div style={{ display:"flex", gap:5, marginBottom:18, justifyContent:"center" }}>
             {[{cards:"2–6",val:"+1",color:"#4fffb0"},{cards:"7–9",val:"0",color:"#777"},{cards:"10–A",val:"−1",color:"#ff5577"}].map(r=>(
-              <div key={r.cards} style={{ background:"#0d1810", border:`1px solid ${r.color}22`, borderRadius:6, padding:"4px 11px", textAlign:"center" }}>
-                <div style={{ fontSize:9, color:"#333", marginBottom:1 }}>{r.cards}</div>
-                <div style={{ fontSize:14, fontWeight:900, color:r.color }}>{r.val}</div>
+              <div key={r.cards} style={{ background:"#0d1810", border:`1px solid ${r.color}22`, borderRadius:6, padding:"clamp(4px,1vh,10px) clamp(11px,2vw,22px)", textAlign:"center" }}>
+                <div style={{ fontSize:"clamp(9px,1.1vw,13px)", color:"#333", marginBottom:1 }}>{r.cards}</div>
+                <div style={{ fontSize:"clamp(14px,2vw,22px)", fontWeight:900, color:r.color }}>{r.val}</div>
               </div>
             ))}
           </div>
@@ -320,41 +320,41 @@ export default function BlackjackTrainer() {
             {cards.map((card,i)=>(
               <div key={card.id} style={{
                 background:"#101c13", border:"1px solid #1a2e1e", borderRadius:10,
-                width:60, height:82, display:"flex", flexDirection:"column",
+                width:"clamp(60px,8vw,100px)", height:"clamp(82px,11vw,138px)", display:"flex", flexDirection:"column",
                 alignItems:"center", justifyContent:"center", position:"relative",
                 animation:`slideIn 0.22s ease ${i*0.07}s both`,
               }}>
-                <div style={{ fontSize:18, fontWeight:900, color:isRed(card.suit)?"#ff7070":"#dde8e0" }}>{card.value}</div>
-                <div style={{ fontSize:16, color:isRed(card.suit)?"#ff7070":"#dde8e0" }}>{card.suit}</div>
+                <div style={{ fontSize:"clamp(18px,2.5vw,32px)", fontWeight:900, color:isRed(card.suit)?"#ff7070":"#dde8e0" }}>{card.value}</div>
+                <div style={{ fontSize:"clamp(16px,2.2vw,28px)", color:isRed(card.suit)?"#ff7070":"#dde8e0" }}>{card.suit}</div>
                 {showHint && <div style={{ position:"absolute", bottom:3, right:4, fontSize:8, fontWeight:900, color:getCountLabel(card.value).color }}>{getCountLabel(card.value).label}</div>}
               </div>
             ))}
           </div>
           {!feedback ? (
             <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
-              <div style={{ fontSize:11, color:"#333" }}>What is the running count?</div>
+              <div style={{ fontSize:"clamp(11px,1.4vw,16px)", color:"#333" }}>What is the running count?</div>
               <div style={{ display:"flex", gap:5, flexWrap:"wrap", justifyContent:"center" }}>
                 {[-4,-3,-2,-1,0,1,2,3,4,5].map(n=>(
                   <button key={n} onClick={()=>setUserGuess(String(n))} style={{
-                    width:34, height:34, borderRadius:5, border:"none", cursor:"pointer",
+                    width:"clamp(34px,4.5vw,56px)", height:"clamp(34px,4.5vw,56px)", borderRadius:5, border:"none", cursor:"pointer",
                     background:userGuess===String(n)?"#4fffb0":"#0d1810",
                     color:userGuess===String(n)?"#070c0a":"#555",
-                    fontWeight:900, fontSize:12, fontFamily:"'Courier New', monospace", transition:"all 0.15s",
+                    fontWeight:900, fontSize:"clamp(12px,1.6vw,18px)", fontFamily:"'Courier New', monospace", transition:"all 0.15s",
                   }}>{n>0?`+${n}`:n}</button>
                 ))}
               </div>
               <div style={{ display:"flex", gap:7 }}>
                 <button onClick={submitCount} disabled={userGuess===""} style={{
-                  padding:"8px 22px", background:userGuess!==""?"#4fffb0":"#0d1810",
+                  padding:"clamp(8px,1.2vh,14px) clamp(22px,3vw,38px)", background:userGuess!==""?"#4fffb0":"#0d1810",
                   color:userGuess!==""?"#070c0a":"#2a3a2e", border:"none", borderRadius:7,
                   cursor:userGuess!==""?"pointer":"default",
-                  fontFamily:"'Courier New', monospace", fontWeight:900, fontSize:11, transition:"all 0.2s",
+                  fontFamily:"'Courier New', monospace", fontWeight:900, fontSize:"clamp(11px,1.4vw,16px)", transition:"all 0.2s",
                 }}>SUBMIT</button>
                 <button onClick={()=>setShowHint(!showHint)} style={{
-                  padding:"8px 13px", background:"#0d1810",
+                  padding:"clamp(8px,1.2vh,14px) clamp(13px,2vw,22px)", background:"#0d1810",
                   color:showHint?"#ffd700":"#333",
                   border:`1px solid ${showHint?"#ffd70033":"#1a2a1e"}`,
-                  borderRadius:7, cursor:"pointer", fontFamily:"'Courier New', monospace", fontSize:10,
+                  borderRadius:7, cursor:"pointer", fontFamily:"'Courier New', monospace", fontSize:"clamp(10px,1.3vw,14px)",
                 }}>HINT</button>
               </div>
             </div>
@@ -387,7 +387,7 @@ export default function BlackjackTrainer() {
 
       {/* ═══════════════ STRATEGY MODE ═══════════════ */}
       {mode==="Strategy" && (
-        <div style={{ width:"100%", maxWidth:580 }}>
+        <div style={{ width:"100%", maxWidth:"min(960px,95vw)" }}>
           {/* Quiz / Chart toggle */}
           <div style={{ display:"flex", gap:5, marginBottom:16, justifyContent:"center" }}>
             {["quiz","chart"].map(v=>(
@@ -410,13 +410,13 @@ export default function BlackjackTrainer() {
                 <span style={{ color:"#333" }}>STREAK: <span style={{ color:"#ffd700" }}>{quizStreak}</span></span>
               </div>
               <div style={{ background:"#0d1810", border:"1px solid #1a2a1e", borderRadius:12, padding:"18px 20px", marginBottom:18 }}>
-                <div style={{ fontSize:9, color:"#333", letterSpacing:"0.2em", marginBottom:7 }}>
+                <div style={{ fontSize:"clamp(9px,1.1vw,13px)", color:"#333", letterSpacing:"0.2em", marginBottom:7 }}>
                   {quizScenario.type==="hard"?"HARD TOTAL":quizScenario.type==="soft"?"SOFT HAND":"PAIR"}
                 </div>
-                <div style={{ fontSize:26, fontWeight:900, marginBottom:10 }}>{quizScenario.hand}</div>
+                <div style={{ fontSize:"clamp(26px,3.8vw,46px)", fontWeight:900, marginBottom:10 }}>{quizScenario.hand}</div>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-                  <span style={{ fontSize:11, color:"#444" }}>vs dealer</span>
-                  <div style={{ background:"#121f16", border:"1px solid #2a3a2e", borderRadius:7, padding:"5px 13px", fontSize:18, fontWeight:900, color:"#ffd700" }}>{quizScenario.dealer}</div>
+                  <span style={{ fontSize:"clamp(11px,1.4vw,17px)", color:"#444" }}>vs dealer</span>
+                  <div style={{ background:"#121f16", border:"1px solid #2a3a2e", borderRadius:7, padding:"clamp(5px,1vh,10px) clamp(13px,2vw,24px)", fontSize:"clamp(18px,2.5vw,30px)", fontWeight:900, color:"#ffd700" }}>{quizScenario.dealer}</div>
                 </div>
               </div>
               {!quizFeedback ? (
@@ -427,11 +427,11 @@ export default function BlackjackTrainer() {
                       const st=ACTION_STYLE[action];
                       return (
                         <button key={action} onClick={()=>submitStrategy(action)} style={{
-                          padding:"11px 18px", borderRadius:7,
+                          padding:"clamp(11px,1.5vh,18px) clamp(18px,2.5vw,32px)", borderRadius:7,
                           background:st.bg, border:`1px solid ${st.border}88`,
                           color:st.color, cursor:"pointer",
-                          fontFamily:"'Courier New', monospace", fontWeight:900, fontSize:12,
-                          letterSpacing:"0.1em", minWidth:76, transition:"all 0.15s",
+                          fontFamily:"'Courier New', monospace", fontWeight:900, fontSize:"clamp(12px,1.6vw,19px)",
+                          letterSpacing:"0.1em", minWidth:"clamp(76px,9vw,120px)", transition:"all 0.15s",
                         }}>{st.label}</button>
                       );
                     })}
@@ -634,23 +634,23 @@ export default function BlackjackTrainer() {
 
       {/* ═══════════════ SPEED MODE ═══════════════ */}
       {mode==="Speed" && (
-        <div style={{ width:"100%", maxWidth:390, textAlign:"center" }}>
+        <div style={{ width:"100%", maxWidth:"min(640px,95vw)", textAlign:"center" }}>
           <div style={{ display:"flex", gap:14, marginBottom:14, fontSize:10, justifyContent:"center" }}>
             <span style={{ color:"#333" }}>CORRECT: <span style={{ color:"#4fffb0" }}>{countScore.correct}/{countScore.total}</span></span>
             <span style={{ color:"#333" }}>STREAK: <span style={{ color:"#ffd700" }}>{streak}</span></span>
             <span style={{ color:"#333" }}>BEST: <span style={{ color:"#ffd700" }}>{bestStreak}</span></span>
           </div>
           <div style={{ fontSize:10, color:"#252f26", marginBottom:14 }}>10 cards auto-flip. Track the count. Submit at the end.</div>
-          <div style={{ height:108, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, position:"relative" }}>
+          <div style={{ height:"clamp(108px,15vw,180px)", display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, position:"relative" }}>
             {speedCards.length>0 && speedIndex<speedCards.length && speedResult===null ? (
               <div key={speedIndex} style={{
                 background:"#101c13", border:"1px solid #1a2e1e", borderRadius:11,
-                width:70, height:94, display:"flex", flexDirection:"column",
+                width:"clamp(70px,9vw,116px)", height:"clamp(94px,12vw,156px)", display:"flex", flexDirection:"column",
                 alignItems:"center", justifyContent:"center",
                 animation:"flipIn 0.22s ease",
               }}>
-                <div style={{ fontSize:21, fontWeight:900, color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].value}</div>
-                <div style={{ fontSize:18, color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].suit}</div>
+                <div style={{ fontSize:"clamp(21px,3vw,36px)", fontWeight:900, color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].value}</div>
+                <div style={{ fontSize:"clamp(18px,2.5vw,30px)", color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].suit}</div>
               </div>
             ) : speedIndex>=speedCards.length && speedResult===null ? (
               <div style={{ color:"#4fffb0", fontWeight:900, fontSize:14 }}>ENTER YOUR COUNT ↓</div>
@@ -673,10 +673,10 @@ export default function BlackjackTrainer() {
               <div style={{ display:"flex", gap:4, flexWrap:"wrap", justifyContent:"center" }}>
                 {[-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7].map(n=>(
                   <button key={n} onClick={()=>setSpeedInput(String(n))} style={{
-                    width:32, height:32, borderRadius:5, border:"none", cursor:"pointer",
+                    width:"clamp(32px,4vw,50px)", height:"clamp(32px,4vw,50px)", borderRadius:5, border:"none", cursor:"pointer",
                     background:speedInput===String(n)?"#4fffb0":"#0d1810",
                     color:speedInput===String(n)?"#070c0a":"#555",
-                    fontWeight:900, fontSize:10, fontFamily:"'Courier New', monospace",
+                    fontWeight:900, fontSize:"clamp(10px,1.3vw,15px)", fontFamily:"'Courier New', monospace",
                   }}>{n>0?`+${n}`:n}</button>
                 ))}
               </div>

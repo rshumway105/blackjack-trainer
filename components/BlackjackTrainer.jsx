@@ -634,23 +634,23 @@ export default function BlackjackTrainer() {
 
       {/* ═══════════════ SPEED MODE ═══════════════ */}
       {mode==="Speed" && (
-        <div style={{ width:"100%", maxWidth:"min(640px,95vw)", textAlign:"center", minHeight:"calc(100vh - 200px)", display:"flex", flexDirection:"column", justifyContent:"center" }}>
+        <div style={{ width:"100%", maxWidth:"min(640px,95vw)", textAlign:"center", minHeight:"calc(100vh - 200px)", display:"flex", flexDirection:"column", justifyContent:"flex-start", paddingTop:24 }}>
           <div style={{ display:"flex", gap:14, marginBottom:14, fontSize:14, justifyContent:"center" }}>
             <span style={{ color:"#778a80" }}>CORRECT: <span style={{ color:"#4fffb0" }}>{countScore.correct}/{countScore.total}</span></span>
             <span style={{ color:"#778a80" }}>STREAK: <span style={{ color:"#ffd700" }}>{streak}</span></span>
             <span style={{ color:"#778a80" }}>BEST: <span style={{ color:"#ffd700" }}>{bestStreak}</span></span>
           </div>
           <div style={{ fontSize:13, color:"#778a80", marginBottom:14 }}>10 cards auto-flip. Track the count. Submit at the end.</div>
-          <div style={{ height:160, display:"flex", alignItems:"center", justifyContent:"center", marginTop:8, marginBottom:14, position:"relative" }}>
+          <div style={{ height:220, display:"flex", alignItems:"center", justifyContent:"center", marginTop:8, marginBottom:14, position:"relative" }}>
             {speedCards.length>0 && speedIndex<speedCards.length && speedResult===null ? (
               <div key={speedIndex} style={{
                 background:"#101c13", border:"1px solid #1a2e1e", borderRadius:11,
-                width:80, height:100, display:"flex", flexDirection:"column",
+                width:130, height:180, display:"flex", flexDirection:"column",
                 alignItems:"center", justifyContent:"center",
                 animation:"flipIn 0.22s ease",
               }}>
-                <div style={{ fontSize:"clamp(21px,3vw,36px)", fontWeight:900, color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].value}</div>
-                <div style={{ fontSize:"clamp(18px,2.5vw,30px)", color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].suit}</div>
+                <div style={{ fontSize:52, fontWeight:900, color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].value}</div>
+                <div style={{ fontSize:44, color:isRed(speedCards[speedIndex].suit)?"#ff7070":"#dde8e0" }}>{speedCards[speedIndex].suit}</div>
               </div>
             ) : speedIndex>=speedCards.length && speedResult===null ? (
               <div style={{ color:"#4fffb0", fontWeight:900, fontSize:18 }}>ENTER YOUR COUNT ↓</div>

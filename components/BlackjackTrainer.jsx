@@ -233,11 +233,11 @@ export default function BlackjackTrainer() {
 
   // ── CHART RENDERER ──
   const renderChart = (rows) => (
-    <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch", width:"100%" }}>
-      <table style={{ borderCollapse:"collapse", fontSize:"clamp(10.5px,1.3vw,15px)", minWidth:310, width:"100%" }}>
+    <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch", width:"100%", maxWidth:700 }}>
+      <table style={{ borderCollapse:"collapse", fontSize:13, minWidth:310, width:"100%" }}>
         <thead>
           <tr>
-            <th style={{ padding:"3px 8px", color:"#778a80", textAlign:"left", fontWeight:700, fontSize:9, letterSpacing:"0.1em" }}>HAND</th>
+            <th style={{ padding:"5px 8px", color:"#778a80", textAlign:"left", fontWeight:700, fontSize:12, letterSpacing:"0.1em" }}>HAND</th>
             {DEALER_UPCARDS.map(d=>(
               <th key={d} style={{ padding:"3px 5px", color:"#666", fontWeight:900, fontSize:10, textAlign:"center" }}>{d}</th>
             ))}
@@ -246,14 +246,14 @@ export default function BlackjackTrainer() {
         <tbody>
           {rows.map((row,ri)=>(
             <tr key={ri}>
-              <td style={{ padding:"2px 8px", color:"#bbb", fontWeight:700, fontSize:10, whiteSpace:"nowrap", borderRight:"1px solid #151f17" }}>{row.hand}</td>
+              <td style={{ padding:"5px 8px", color:"#bbb", fontWeight:700, fontSize:12, whiteSpace:"nowrap", borderRight:"1px solid #151f17" }}>{row.hand}</td>
               {row.actions.map((a,ai)=>{
                 const st = ACTION_STYLE[a]||ACTION_STYLE.H;
                 return (
-                  <td key={ai} style={{ padding:"2px 2px", textAlign:"center" }}>
+                  <td key={ai} style={{ padding:"5px 8px", textAlign:"center" }}>
                     <div style={{
                       background:st.bg, border:`1px solid ${st.border}44`, borderRadius:3,
-                      padding:"2px 0", color:st.color, fontWeight:900, fontSize:8.5,
+                      padding:"2px 0", color:st.color, fontWeight:900, fontSize:13,
                       letterSpacing:"0.03em", minWidth:26,
                     }}>{st.label.slice(0,3)}</div>
                   </td>
@@ -275,12 +275,12 @@ export default function BlackjackTrainer() {
       minHeight:"100vh", background:"#070c0a",
       fontFamily:"'Courier New', monospace", color:"#dde8e0",
       display:"flex", flexDirection:"column", alignItems:"center",
-      padding:"18px 10px 48px",
+      padding:"8px 10px 48px",
       backgroundImage:"radial-gradient(ellipse at 10% 50%, #0b1c10 0%, transparent 55%), radial-gradient(ellipse at 90% 10%, #0c1a0e 0%, transparent 50%)",
     }}>
 
       {/* Header */}
-      <div style={{ textAlign:"center", marginBottom:18 }}>
+      <div style={{ textAlign:"center", marginBottom:8 }}>
         <div style={{ fontSize:"clamp(9px,1.2vw,14px)", letterSpacing:"0.5em", color:"#4fffb0", marginBottom:4 }}>HI-LO · BASIC STRATEGY · DEVIATIONS</div>
         <h1 style={{ fontSize:"clamp(22px,3.8vw,52px)", fontWeight:900, margin:0, letterSpacing:"-0.02em" }}>
           BLACKJACK <span style={{ color:"#4fffb0" }}>TRAINER</span>
@@ -303,7 +303,7 @@ export default function BlackjackTrainer() {
       {/* ═══════════════ COUNT MODE ═══════════════ */}
       {mode==="Count" && (
         <div style={{ width:"100%", maxWidth:"min(720px,95vw)", minHeight:"calc(100vh - 200px)", display:"flex", flexDirection:"column", justifyContent:"center" }}>
-          <div style={{ display:"flex", gap:14, marginBottom:16, fontSize:"clamp(10px,1.4vw,16px)", justifyContent:"center" }}>
+          <div style={{ display:"flex", gap:14, marginBottom:16, marginTop:8, fontSize:"clamp(10px,1.4vw,16px)", justifyContent:"center" }}>
             <span style={{ color:"#778a80" }}>CORRECT: <span style={{ color:"#4fffb0" }}>{countScore.correct}/{countScore.total}</span></span>
             {cAcc!==null && <span style={{ color:"#778a80" }}>ACC: <span style={{ color:cAcc>=80?"#4fffb0":cAcc>=60?"#ffd700":"#ff5577" }}>{cAcc}%</span></span>}
             <span style={{ color:"#778a80" }}>STREAK: <span style={{ color:"#ffd700" }}>{streak}</span></span>
@@ -389,7 +389,7 @@ export default function BlackjackTrainer() {
       {mode==="Strategy" && (
         <div style={{ width:"100%", maxWidth:"min(960px,95vw)", minHeight:"calc(100vh - 200px)", display:"flex", flexDirection:"column", justifyContent:"center" }}>
           {/* Quiz / Chart toggle */}
-          <div style={{ display:"flex", gap:5, marginBottom:12, justifyContent:"center" }}>
+          <div style={{ display:"flex", gap:5, marginBottom:12, marginTop:8, justifyContent:"center" }}>
             {["quiz","chart"].map(v=>(
               <button key={v} onClick={()=>setQuizView(v)} style={{
                 padding:"6px 16px", borderRadius:6, border:"none", cursor:"pointer",
@@ -586,14 +586,14 @@ export default function BlackjackTrainer() {
                   {/* Deviation table */}
                   <div style={{ background:"#090e0b", border:"1px solid #141e16", borderRadius:10, overflow:"hidden" }}>
                     <div style={{ overflowX:"auto" }}>
-                      <table style={{ borderCollapse:"collapse", width:"100%", fontSize:10 }}>
+                      <table style={{ borderCollapse:"collapse", width:"100%", fontSize:13 }}>
                         <thead>
                           <tr style={{ background:"#0d1810" }}>
-                            <th style={{ padding:"7px 10px", color:"#778a80", textAlign:"left", fontSize:8.5, letterSpacing:"0.1em", fontWeight:900 }}>HAND</th>
-                            <th style={{ padding:"7px 6px", color:"#778a80", textAlign:"center", fontSize:8.5, letterSpacing:"0.05em", fontWeight:900 }}>BASE</th>
-                            <th style={{ padding:"7px 6px", color:"#778a80", textAlign:"center", fontSize:8.5, letterSpacing:"0.05em", fontWeight:900 }}>TC</th>
-                            <th style={{ padding:"7px 6px", color:"#778a80", textAlign:"center", fontSize:8.5, letterSpacing:"0.05em", fontWeight:900 }}>DEVIATE</th>
-                            <th style={{ padding:"7px 6px", color:"#778a80", textAlign:"center", fontSize:8.5, letterSpacing:"0.05em", fontWeight:900 }}>★</th>
+                            <th style={{ padding:"5px 8px", color:"#778a80", textAlign:"left", fontSize:12, letterSpacing:"0.1em", fontWeight:900 }}>HAND</th>
+                            <th style={{ padding:"5px 8px", color:"#778a80", textAlign:"center", fontSize:12, letterSpacing:"0.05em", fontWeight:900 }}>BASE</th>
+                            <th style={{ padding:"5px 8px", color:"#778a80", textAlign:"center", fontSize:12, letterSpacing:"0.05em", fontWeight:900 }}>TC</th>
+                            <th style={{ padding:"5px 8px", color:"#778a80", textAlign:"center", fontSize:12, letterSpacing:"0.05em", fontWeight:900 }}>DEVIATE</th>
+                            <th style={{ padding:"5px 8px", color:"#778a80", textAlign:"center", fontSize:12, letterSpacing:"0.05em", fontWeight:900 }}>★</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -602,19 +602,19 @@ export default function BlackjackTrainer() {
                             const dirSymbol = d.dir==="gte"?"≥":"≤";
                             return (
                               <tr key={i} style={{ borderTop:"1px solid #0f1810", background:i%2===0?"#090e0b":"#0b1209" }}>
-                                <td style={{ padding:"6px 10px", fontWeight:900, fontSize:10, color:"#cce0d0", whiteSpace:"nowrap" }}>{d.hand}</td>
-                                <td style={{ padding:"6px 6px", textAlign:"center", fontSize:9, color:"#555" }}>
+                                <td style={{ padding:"5px 8px", fontWeight:900, fontSize:12, color:"#cce0d0", whiteSpace:"nowrap" }}>{d.hand}</td>
+                                <td style={{ padding:"5px 8px", textAlign:"center", fontSize:13, color:"#555" }}>
                                   {d.base!=="—" ? (ACTION_STYLE[d.base]?.label||d.base) : "—"}
                                 </td>
-                                <td style={{ padding:"6px 6px", textAlign:"center", fontWeight:900, fontSize:11 }}>
+                                <td style={{ padding:"5px 8px", textAlign:"center", fontWeight:900, fontSize:13 }}>
                                   <span style={{ color: d.dir==="gte"?"#4fffb0":"#ff5577" }}>
                                     {dirSymbol}{d.tc}
                                   </span>
                                 </td>
-                                <td style={{ padding:"6px 6px", textAlign:"center" }}>
-                                  <span style={{ color:devSt.color, fontWeight:900, fontSize:9 }}>{devSt.label}</span>
+                                <td style={{ padding:"5px 8px", textAlign:"center" }}>
+                                  <span style={{ color:devSt.color, fontWeight:900, fontSize:13 }}>{devSt.label}</span>
                                 </td>
-                                <td style={{ padding:"6px 6px", textAlign:"center", fontSize:10, color:"#ffd700" }}>{d.priority}</td>
+                                <td style={{ padding:"5px 8px", textAlign:"center", fontSize:13, color:"#ffd700" }}>{d.priority}</td>
                               </tr>
                             );
                           })}
@@ -641,7 +641,7 @@ export default function BlackjackTrainer() {
             <span style={{ color:"#778a80" }}>BEST: <span style={{ color:"#ffd700" }}>{bestStreak}</span></span>
           </div>
           <div style={{ fontSize:10, color:"#778a80", marginBottom:14 }}>10 cards auto-flip. Track the count. Submit at the end.</div>
-          <div style={{ height:160, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, position:"relative" }}>
+          <div style={{ height:160, display:"flex", alignItems:"center", justifyContent:"center", marginTop:8, marginBottom:14, position:"relative" }}>
             {speedCards.length>0 && speedIndex<speedCards.length && speedResult===null ? (
               <div key={speedIndex} style={{
                 background:"#101c13", border:"1px solid #1a2e1e", borderRadius:11,

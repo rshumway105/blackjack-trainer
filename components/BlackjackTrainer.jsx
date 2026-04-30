@@ -113,11 +113,11 @@ const ALL_STRAT_SCENARIOS = [
   ...PAIRS.map(r=>r.actions.map((a,i)=>({ type:"pair", hand:r.hand, dealer:DEALER_UPCARDS[i], correct:a }))).flat(),
 ];
 
-const MODES = ["Count","Strategy","Speed"];
+const MODES = ["Guide","Count","Strategy","Speed"];
 
 // ─── COMPONENT ───────────────────────────────────────────────
 export default function BlackjackTrainer() {
-  const [mode, setMode] = useState("Count");
+  const [mode, setMode] = useState("Guide");
   const [stratTab, setStratTab] = useState("hard");    // hard|soft|pairs|deviations
   const [quizView, setQuizView] = useState("quiz");    // quiz|chart
 
@@ -299,6 +299,156 @@ export default function BlackjackTrainer() {
           }}>{m.toUpperCase()}</button>
         ))}
       </div>
+
+      {/* ═══════════════ GUIDE MODE ═══════════════ */}
+      {mode==="Guide" && (
+        <div style={{ width:"100%", maxWidth:"min(820px,95vw)", padding:"8px 4px 48px", display:"flex", flexDirection:"column", gap:24 }}>
+
+          {/* House Edge */}
+          <section>
+            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#4fffb0", marginBottom:10 }}>HOUSE EDGE</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {[
+                { label:"Typical recreational player",   edge:"2 – 3%",   note:"guessing, hunches, side bets",      color:"#ff5577" },
+                { label:"Perfect basic strategy",        edge:"~0.5%",    note:"6-deck, S17, DAS — no counting",    color:"#ffd700" },
+                { label:"Basic strategy + Hi-Lo counting", edge:"−0.5 to −1%", note:"player edge with proper bet spread", color:"#4fffb0" },
+              ].map(r=>(
+                <div key={r.label} style={{ display:"flex", alignItems:"center", gap:12, background:"#0d1810", borderRadius:8, padding:"12px 16px" }}>
+                  <div style={{ minWidth:90, fontSize:20, fontWeight:900, color:r.color, textAlign:"right", flexShrink:0 }}>{r.edge}</div>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:700, color:"#dde8e0" }}>{r.label}</div>
+                    <div style={{ fontSize:12, color:"#778a80", marginTop:2 }}>{r.note}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize:12, color:"#778a80", marginTop:8, lineHeight:1.6 }}>
+              Edge figures assume 6-deck, dealer stands soft 17, double after split allowed, no surrender. Actual edges vary slightly by casino rules.
+            </div>
+          </section>
+
+          {/* Basic Strategy */}
+          <section>
+            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#4fffb0", marginBottom:10 }}>BASIC STRATEGY</div>
+            <div style={{ fontSize:14, color:"#dde8e0", lineHeight:1.8, marginBottom:10 }}>
+              Basic strategy is the mathematically optimal play for every hand given your cards and the dealer's upcard. It was derived by computer simulation of billions of hands and eliminates all guesswork. Playing basic strategy perfectly cuts the house edge from 2–3% down to roughly <span style={{ color:"#ffd700", fontWeight:700 }}>0.5%</span> — the lowest of any casino table game.
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {[
+                { action:"HIT",    color:"#2a9fd6", desc:"Take another card. Correct when your total is weak and the dealer shows strength (7+)." },
+                { action:"STAND",  color:"#4fffb0", desc:"Take no more cards. Correct with stiff totals when the dealer is likely to bust (2–6)." },
+                { action:"DOUBLE", color:"#ffd700", desc:"Double your bet and receive exactly one more card. Best on 10 or 11 vs. weak dealer upcards." },
+                { action:"SPLIT",  color:"#c77dff", desc:"Split a pair into two hands. Always split Aces and 8s. Never split 5s or 10s." },
+              ].map(r=>(
+                <div key={r.action} style={{ display:"flex", gap:12, alignItems:"flex-start", background:"#0d1810", borderRadius:8, padding:"10px 14px" }}>
+                  <div style={{ minWidth:60, fontSize:12, fontWeight:900, color:r.color, paddingTop:1 }}>{r.action}</div>
+                  <div style={{ fontSize:13, color:"#aac4b4", lineHeight:1.6 }}>{r.desc}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Hi-Lo Card Counting */}
+          <section>
+            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#4fffb0", marginBottom:10 }}>HI-LO CARD COUNTING</div>
+            <div style={{ fontSize:14, color:"#dde8e0", lineHeight:1.8, marginBottom:12 }}>
+              Card counting tracks the ratio of high cards (10s, Aces) to low cards remaining in the shoe. A deck rich in high cards favors the player — naturals pay 3:2, the dealer busts more often, and doubles/splits become more profitable.
+            </div>
+            <div style={{ display:"flex", gap:8, justifyContent:"center", marginBottom:14 }}>
+              {[{cards:"2 – 6",val:"+1",color:"#4fffb0",note:"low cards → count goes up"},{cards:"7 – 9",val:"0",color:"#778a80",note:"neutral"},{cards:"10 – A",val:"−1",color:"#ff5577",note:"high cards → count goes down"}].map(r=>(
+                <div key={r.cards} style={{ background:"#0d1810", border:`1px solid ${r.color}33`, borderRadius:8, padding:"10px 16px", textAlign:"center", flex:1 }}>
+                  <div style={{ fontSize:22, fontWeight:900, color:r.color, marginBottom:4 }}>{r.val}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#dde8e0", marginBottom:2 }}>{r.cards}</div>
+                  <div style={{ fontSize:11, color:"#778a80" }}>{r.note}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize:14, color:"#dde8e0", lineHeight:1.8 }}>
+              The <span style={{ color:"#ffd700", fontWeight:700 }}>running count</span> is the cumulative total as cards are dealt. The <span style={{ color:"#ffd700", fontWeight:700 }}>true count</span> adjusts for decks remaining:
+            </div>
+            <div style={{ background:"#0d1810", border:"1px solid #4fffb033", borderRadius:8, padding:"12px 16px", margin:"10px 0", textAlign:"center", fontSize:16, color:"#4fffb0", fontWeight:700, letterSpacing:"0.05em" }}>
+              True Count = Running Count ÷ Decks Remaining
+            </div>
+            <div style={{ fontSize:13, color:"#778a80", lineHeight:1.7 }}>
+              Example: running count of +6 with 3 decks left = TC of +2. The true count is what drives deviation decisions and bet sizing — not the raw running count.
+            </div>
+          </section>
+
+          {/* Bet Spreading */}
+          <section>
+            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#4fffb0", marginBottom:10 }}>BET SPREADING</div>
+            <div style={{ fontSize:14, color:"#dde8e0", lineHeight:1.8, marginBottom:10 }}>
+              Counting alone doesn't make you money — you have to vary your bets. Bet small when the count is neutral or negative, and increase your bet when the true count goes positive. The difference between your minimum and maximum bet is your <span style={{ color:"#ffd700", fontWeight:700 }}>bet spread</span>.
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {[
+                { tc:"TC ≤ 0",  bet:"1 unit",  color:"#ff5577", note:"House has the edge — minimum bet" },
+                { tc:"TC +1–2", bet:"2–3 units", color:"#ffd700", note:"Slight player edge" },
+                { tc:"TC +3–4", bet:"4–6 units", color:"#4fffb0", note:"Clear player advantage" },
+                { tc:"TC +5+",  bet:"8–12 units", color:"#4fffb0", note:"Strong advantage — maximum bet" },
+              ].map(r=>(
+                <div key={r.tc} style={{ display:"flex", alignItems:"center", gap:12, background:"#0d1810", borderRadius:8, padding:"10px 14px" }}>
+                  <div style={{ minWidth:72, fontSize:13, fontWeight:900, color:r.color }}>{r.tc}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#dde8e0", minWidth:80 }}>{r.bet}</div>
+                  <div style={{ fontSize:12, color:"#778a80" }}>{r.note}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize:12, color:"#778a80", marginTop:8, lineHeight:1.6 }}>
+              A 1–12 spread in a 6-deck game yields roughly 0.5–1% player edge. Casinos watch for large bet variation — keeping your spread subtle and using cover play extends longevity at the table.
+            </div>
+          </section>
+
+          {/* Deviations */}
+          <section>
+            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#4fffb0", marginBottom:10 }}>INDEX PLAYS (DEVIATIONS)</div>
+            <div style={{ fontSize:14, color:"#dde8e0", lineHeight:1.8, marginBottom:10 }}>
+              When the true count is high or low enough, the mathematically correct play can differ from basic strategy. These departures are called <span style={{ color:"#ff5577", fontWeight:700 }}>index plays</span>. The most valuable 18 are the <span style={{ color:"#ffd700", fontWeight:700 }}>Illustrious 18</span>; the top 4 surrender plays are the <span style={{ color:"#ffd700", fontWeight:700 }}>Fab 4</span>.
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+              {[
+                { play:"16 vs 10",  rule:"Stand at TC ≥ 0 (normally hit)",   priority:"★★★" },
+                { play:"Insurance", rule:"Take at TC ≥ +3 (only time it's correct)", priority:"★★★" },
+                { play:"15 vs 10",  rule:"Stand at TC ≥ +4",                 priority:"★★★" },
+                { play:"12 vs 3",   rule:"Stand at TC ≥ +2",                 priority:"★★"  },
+                { play:"11 vs A",   rule:"Double at TC ≥ +1",                priority:"★★"  },
+              ].map(r=>(
+                <div key={r.play} style={{ display:"flex", alignItems:"center", gap:12, background:"#0d1810", borderRadius:8, padding:"10px 14px" }}>
+                  <div style={{ minWidth:80, fontSize:13, fontWeight:900, color:"#dde8e0", flexShrink:0 }}>{r.play}</div>
+                  <div style={{ fontSize:12, color:"#aac4b4", flex:1 }}>{r.rule}</div>
+                  <div style={{ fontSize:13, color:"#ffd700", flexShrink:0 }}>{r.priority}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize:12, color:"#778a80", marginTop:8, lineHeight:1.6 }}>
+              Master basic strategy first. Add the Illustrious 18 + Fab 4 once your count is reliable — they capture ~80% of the EV available from all possible deviations.
+            </div>
+          </section>
+
+          {/* Learning Path */}
+          <section>
+            <div style={{ fontSize:11, letterSpacing:"0.25em", color:"#4fffb0", marginBottom:10 }}>LEARNING PATH</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {[
+                { step:"1", title:"Memorize basic strategy",    desc:"Use the Strategy → Chart tab. Drill until every play is automatic.", color:"#2a9fd6" },
+                { step:"2", title:"Practice the Hi-Lo count",   desc:"Use the Count tab. Aim for 100% accuracy before adding speed.", color:"#4fffb0" },
+                { step:"3", title:"Build speed",                desc:"Use the Speed tab. Work toward accurately counting a 10-card sequence.", color:"#ffd700" },
+                { step:"4", title:"Learn index plays",          desc:"Use Strategy → Chart → Deviations. Start with the ★★★ plays.", color:"#c77dff" },
+                { step:"5", title:"Combine at the table",       desc:"Count while playing perfect basic strategy, vary bets by true count.", color:"#ff5577" },
+              ].map(r=>(
+                <div key={r.step} style={{ display:"flex", gap:14, alignItems:"flex-start", background:"#0d1810", borderRadius:8, padding:"12px 14px" }}>
+                  <div style={{ width:28, height:28, borderRadius:"50%", background:r.color, color:"#070c0a", fontWeight:900, fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>{r.step}</div>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:700, color:"#dde8e0", marginBottom:3 }}>{r.title}</div>
+                    <div style={{ fontSize:12, color:"#778a80", lineHeight:1.6 }}>{r.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+        </div>
+      )}
 
       {/* ═══════════════ COUNT MODE ═══════════════ */}
       {mode==="Count" && (

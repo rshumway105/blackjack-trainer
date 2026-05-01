@@ -113,7 +113,90 @@ const ALL_STRAT_SCENARIOS = [
   ...PAIRS.map(r=>r.actions.map((a,i)=>({ type:"pair", hand:r.hand, dealer:DEALER_UPCARDS[i], correct:a }))).flat(),
 ];
 
-const MODES = ["Guide","Count","Strategy","Speed"];
+const MODES = ["Guide","Count","Strategy","Speed","Simulate"];
+
+// ─── SIMULATE HELPERS ────────────────────────────────────────
+const simBuildShoe = () => {
+  const d=[];
+  for(let i=0;i<6;i++) for(const s of SUITS) for(const v of VALUES) d.push({suit:s,value:v});
+  for(let i=d.length-1;i>0;i--){const j=0|Math.random()*(i+1);[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+};
+const simHV = cs => { let t=0,a=0; for(const c of cs){if(c.value==='A'){a++;t+=11;}else if(['10','J','Q','K'].includes(c.value))t+=10;else t+=+c.value;} while(t>21&&a--)t-=10; return t; };
+const simSoft = cs => { let t=0,a=0; for(const c of cs){if(c.value==='A'){a++;t+=11;}else if(['10','J','Q','K'].includes(c.value))t+=10;else t+=+c.value;} return a>0&&t<=21; };
+const simBS = (cards, dup) => {
+  const tot=simHV(cards); if(tot>=21) return 'S';
+  const di=DEALER_UPCARDS.indexOf(dup);
+  if(cards.length===2){
+    const nv=c=>(['J','Q','K'].includes(c.value)?'10':c.value);
+    const a=nv(cards[0]),b=nv(cards[1]);
+    if(a===b){const r=PAIRS.find(r=>r.hand===(a==='A'?'A,A':`${a},${a}`));if(r&&r.actions[di]==='P')return'H';}
+  }
+  if(simSoft(cards)){const r=SOFT_TOTALS.find(r=>r.hand===`A,${tot-11}`);if(r){const a=r.actions[di];if(a==='DS')return cards.length===2?'D':'S';if(a==='D'&&cards.length>2)return'H';return a;}}
+  for(const r of HARD_TOTALS){if(r.hand==='17+'&&tot>=17)return'S';if(r.hand==='8-'&&tot<=8)return'H';if(+r.hand===tot){const a=r.actions[di];return(a==='D'&&cards.length>2)?'H':a;}}
+  return 'H';
+};
+const SIM0 = {phase:'idle',active:false,players:2,shoe:[],si:0,rc:0,seats:[],dealer:{cards:[],hole:true},ds:0,ps:0,hc:0};
+const simAdvance = s => {
+  if(!s.active) return s;
+  const np=s.players;
+  if(s.phase==='deal'){
+    const{shoe,si,rc}=s, card=shoe[si], vis=s.ds!==2*np+1, nrc=vis?rc+getCountValue(card.value):rc;
+    let seats=s.seats.map(x=>({...x,cards:[...x.cards]})), dealer={...s.dealer,cards:[...s.dealer.cards]};
+    if(s.ds<np) seats[s.ds].cards.push(card);
+    else if(s.ds===np) dealer.cards.push({...card,hidden:false});
+    else if(s.ds<2*np+1) seats[s.ds-np-1].cards.push(card);
+    else dealer.cards.push({...card,hidden:true});
+    return s.ds===2*np+1
+      ? {...s,si:si+1,rc:nrc,seats,dealer,ds:0,phase:'play',ps:0}
+      : {...s,si:si+1,rc:nrc,seats,dealer,ds:s.ds+1};
+  }
+  if(s.phase==='play'){
+    if(s.ps>=np) return{...s,phase:'dealer'};
+    const seat=s.seats[s.ps];
+    if(seat.done) return{...s,ps:s.ps+1};
+    const act=simBS(seat.cards,s.dealer.cards[0].value);
+    let seats=s.seats.map(x=>({...x,cards:[...x.cards]}));
+    if(act==='S'){seats[s.ps].done=true;return{...s,seats,ps:s.ps+1};}
+    const card=s.shoe[s.si], nrc=s.rc+getCountValue(card.value);
+    seats[s.ps].cards.push(card);
+    const tot=simHV(seats[s.ps].cards);
+    if(act==='D'){seats[s.ps].done=true;seats[s.ps].doubled=true;}
+    if(tot>=21) seats[s.ps].done=true;
+    return{...s,si:s.si+1,rc:nrc,seats};
+  }
+  if(s.phase==='dealer'){
+    let dealer={...s.dealer,cards:s.dealer.cards.map(c=>({...c})),hole:false}, {si,rc}=s;
+    if(s.dealer.hole){rc+=getCountValue(s.dealer.cards[1].value);return{...s,dealer,rc};}
+    const tot=simHV(dealer.cards);
+    if(tot<17||(tot===17&&simSoft(dealer.cards))){
+      const card=s.shoe[si++];rc+=getCountValue(card.value);dealer.cards.push(card);return{...s,si,rc,dealer};
+    }
+    const dBJ=dealer.cards.length===2&&tot===21;
+    const seats=s.seats.map(seat=>{
+      const st=simHV(seat.cards),sBJ=seat.cards.length===2&&st===21;
+      let r;
+      if(st>21)r='bust';else if(sBJ&&dBJ)r='push';else if(sBJ)r='BJ!';
+      else if(dBJ)r='lose';else if(tot>21||st>tot)r='win';else if(st<tot)r='lose';else r='push';
+      return{...seat,result:r};
+    });
+    return{...s,dealer,seats,phase:'result'};
+  }
+  if(s.phase==='result'){
+    let{shoe,si}=s;if(si>=234){shoe=simBuildShoe();si=0;}
+    return{...s,shoe,si,
+      seats:Array.from({length:np},()=>({cards:[],done:false,doubled:false,result:null})),
+      dealer:{cards:[],hole:true},ds:0,ps:0,phase:'deal',hc:s.hc+1};
+  }
+  return s;
+};
+const SimCard=({card,hidden,sm})=>(
+  <div style={{background:hidden?'#0d1810':'#fff',border:`1px solid ${hidden?'#1a2e1e':'#ccc'}`,borderRadius:sm?4:8,width:sm?34:56,height:sm?48:78,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+    {hidden
+      ? <div style={{fontSize:16,color:'#1a2e1e'}}>?</div>
+      : <><div style={{fontSize:sm?14:24,fontWeight:900,color:isRed(card.suit)?'#c00':'#111',lineHeight:1}}>{card.value}</div><div style={{fontSize:sm?11:18,color:isRed(card.suit)?'#c00':'#111',lineHeight:1.2}}>{card.suit}</div></>}
+  </div>
+);
 
 // ─── COMPONENT ───────────────────────────────────────────────
 export default function BlackjackTrainer() {
@@ -153,6 +236,10 @@ export default function BlackjackTrainer() {
   const [speedCount, setSpeedCount]   = useState(0);
   const [speedResult, setSpeedResult] = useState(null);
   const [speedInput, setSpeedInput]   = useState("");
+
+  // ── Simulate mode
+  const [sim, setSim]           = useState(SIM0);
+  const [simReveal, setSimReveal] = useState(false);
 
   // ── COUNT LOGIC ──
   const dealCards = useCallback(() => {
@@ -219,6 +306,13 @@ export default function BlackjackTrainer() {
   }, []);
 
   useEffect(() => { if (devMode) newDevQuiz(); }, [devMode]);
+
+  useEffect(() => {
+    if (mode!=='Simulate' || !sim.active) return;
+    const delay = sim.phase==='result' ? 1500 : 400;
+    const t = setTimeout(() => setSim(simAdvance), delay);
+    return () => clearTimeout(t);
+  }, [sim, mode]);
 
   const submitDevQuiz = () => {
     if (!devScenario||devInput===null||devTCInput==="") return;
@@ -873,6 +967,143 @@ export default function BlackjackTrainer() {
           )}
         </div>
       )}
+
+      {/* ═══════════════ SIMULATE MODE ═══════════════ */}
+      {mode==='Simulate' && (() => {
+        const tc = sim.si>0 ? Math.round(sim.rc/Math.max((312-sim.si)/52,0.5)) : 0;
+        const decks = ((312-sim.si)/52).toFixed(1);
+        return (
+          <div style={{width:'100%',maxWidth:'min(960px,95vw)',paddingTop:12}}>
+            {/* Controls */}
+            <div style={{display:'flex',gap:10,alignItems:'center',marginBottom:16,flexWrap:'wrap',justifyContent:'center'}}>
+              <span style={{fontSize:13,color:'#778a80'}}>PLAYERS:</span>
+              {[1,2,3,4,5,6].map(n=>(
+                <button key={n} onClick={()=>sim.phase==='idle'&&setSim(s=>({...s,players:n}))} style={{
+                  width:34,height:34,borderRadius:5,border:'none',cursor:'pointer',
+                  background:sim.players===n?'#4fffb0':'#0d1810',
+                  color:sim.players===n?'#070c0a':'#778a80',
+                  fontFamily:"'Courier New',monospace",fontWeight:900,fontSize:13,
+                  opacity:sim.phase!=='idle'&&sim.players!==n?0.35:1,
+                }}>{n}</button>
+              ))}
+              <button onClick={()=>{
+                if(sim.phase==='idle'){
+                  const shoe=simBuildShoe();
+                  setSim(s=>({...s,shoe,si:0,rc:0,
+                    seats:Array.from({length:s.players},()=>({cards:[],done:false,doubled:false,result:null})),
+                    dealer:{cards:[],hole:true},ds:0,ps:0,hc:1,phase:'deal',active:true}));
+                } else {
+                  setSim(s=>({...s,active:!s.active}));
+                }
+              }} style={{
+                padding:'8px 22px',borderRadius:7,border:'none',cursor:'pointer',
+                background:sim.phase==='idle'?'#4fffb0':sim.active?'#ffd700':'#4fffb0',
+                color:'#070c0a',fontFamily:"'Courier New',monospace",fontWeight:900,fontSize:13,
+              }}>{sim.phase==='idle'?'START':sim.active?'PAUSE':'RESUME'}</button>
+              <button onClick={()=>{setSim(SIM0);setSimReveal(false);}} style={{
+                padding:'8px 22px',borderRadius:7,border:'1px solid #778a8033',cursor:'pointer',
+                background:'transparent',color:'#778a80',
+                fontFamily:"'Courier New',monospace",fontWeight:900,fontSize:13,
+              }}>RESET</button>
+              {sim.hc>0&&<span style={{fontSize:12,color:'#778a80'}}>HAND #{sim.hc}</span>}
+            </div>
+
+            <div style={{display:'flex',gap:14,alignItems:'flex-start'}}>
+              {/* Table */}
+              <div style={{flex:1,minWidth:0}}>
+                {/* Dealer */}
+                <div style={{textAlign:'center',marginBottom:20}}>
+                  <div style={{fontSize:11,letterSpacing:'0.2em',color:'#778a80',marginBottom:8}}>DEALER</div>
+                  <div style={{display:'flex',gap:8,justifyContent:'center',flexWrap:'wrap',marginBottom:6}}>
+                    {sim.dealer.cards.map((c,i)=>(
+                      <SimCard key={i} card={c} hidden={c.hidden&&sim.dealer.hole} />
+                    ))}
+                  </div>
+                  {sim.dealer.cards.length>0&&!sim.dealer.hole&&(
+                    <div style={{fontSize:14,color:'#778a80'}}>
+                      {simHV(sim.dealer.cards)}{simSoft(sim.dealer.cards)?' (soft)':''}
+                      {simHV(sim.dealer.cards)>21?' — BUST':''}
+                    </div>
+                  )}
+                </div>
+
+                {/* Seats */}
+                <div style={{display:'flex',gap:10,justifyContent:'center',flexWrap:'wrap'}}>
+                  {sim.seats.map((seat,i)=>{
+                    const rc=seat.result;
+                    const bc=rc==='win'||rc==='BJ!'?'#4fffb0':rc==='push'?'#ffd700':rc==='bust'||rc==='lose'?'#ff5577':'#1a2e1e';
+                    return(
+                      <div key={i} style={{background:'#0d1810',border:`1px solid ${bc}33`,borderRadius:10,padding:'10px 12px',textAlign:'center',minWidth:90}}>
+                        <div style={{fontSize:11,color:'#778a80',marginBottom:6}}>P{i+1}</div>
+                        <div style={{display:'flex',gap:4,justifyContent:'center',flexWrap:'wrap',marginBottom:6,minHeight:48}}>
+                          {seat.cards.map((c,j)=><SimCard key={j} card={c} hidden={false} sm />)}
+                        </div>
+                        {seat.cards.length>0&&(
+                          <div style={{fontSize:13,color:'#dde8e0',marginBottom:4}}>
+                            {simHV(seat.cards)>21?'BUST':simHV(seat.cards)}{seat.doubled?' 2x':''}
+                          </div>
+                        )}
+                        {rc&&(
+                          <div style={{fontSize:12,fontWeight:900,color:bc,letterSpacing:'0.05em'}}>{rc.toUpperCase()}</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {sim.phase==='idle'&&(
+                  <div style={{textAlign:'center',marginTop:24,fontSize:13,color:'#778a80'}}>
+                    Select players and press START
+                  </div>
+                )}
+              </div>
+
+              {/* Count Panel */}
+              <div style={{width:164,flexShrink:0,background:'#0d1810',border:'1px solid #1a2e1e',borderRadius:10,padding:14}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:14}}>
+                  <span style={{fontSize:11,letterSpacing:'0.15em',color:'#778a80'}}>COUNT</span>
+                  <button onClick={()=>setSimReveal(r=>!r)} style={{
+                    fontSize:10,padding:'3px 8px',borderRadius:4,border:`1px solid ${simReveal?'#4fffb044':'#1a2e1e'}`,
+                    background:simReveal?'#4fffb022':'transparent',color:simReveal?'#4fffb0':'#778a80',
+                    cursor:'pointer',fontFamily:"'Courier New',monospace",fontWeight:900,
+                  }}>{simReveal?'HIDE':'REVEAL'}</button>
+                </div>
+                {simReveal?(
+                  <>
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:11,color:'#778a80',marginBottom:2}}>RUNNING</div>
+                      <div style={{fontSize:30,fontWeight:900,color:sim.rc>0?'#4fffb0':sim.rc<0?'#ff5577':'#dde8e0'}}>
+                        {sim.rc>0?'+':''}{sim.rc}
+                      </div>
+                    </div>
+                    <div style={{marginBottom:12}}>
+                      <div style={{fontSize:11,color:'#778a80',marginBottom:2}}>DECKS LEFT</div>
+                      <div style={{fontSize:22,fontWeight:900,color:'#dde8e0'}}>{decks}</div>
+                    </div>
+                    <div style={{marginBottom:16}}>
+                      <div style={{fontSize:11,color:'#778a80',marginBottom:2}}>TRUE COUNT</div>
+                      <div style={{fontSize:30,fontWeight:900,color:tc>0?'#4fffb0':tc<0?'#ff5577':'#dde8e0'}}>
+                        {tc>0?'+':''}{tc}
+                      </div>
+                    </div>
+                  </>
+                ):(
+                  <div style={{fontSize:12,color:'#1a2e1e',textAlign:'center',padding:'24px 0'}}>hidden</div>
+                )}
+                <div>
+                  <div style={{display:'flex',justifyContent:'space-between',fontSize:11,color:'#778a80',marginBottom:4}}>
+                    <span>SHOE</span><span>{sim.si}/312</span>
+                  </div>
+                  <div style={{background:'#070c0a',borderRadius:4,height:8,overflow:'hidden'}}>
+                    <div style={{height:'100%',borderRadius:4,background:sim.si>=234?'#ff5577':'#4fffb0',width:`${(sim.si/312)*100}%`,transition:'width 0.3s'}} />
+                  </div>
+                  {sim.si>=234&&<div style={{fontSize:10,color:'#ff5577',marginTop:4}}>RESHUFFLE NEXT HAND</div>}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <style>{`
         @keyframes slideIn { from { opacity:0; transform:translateY(-7px); } to { opacity:1; transform:translateY(0); } }

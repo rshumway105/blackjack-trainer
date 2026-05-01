@@ -113,7 +113,7 @@ const ALL_STRAT_SCENARIOS = [
   ...PAIRS.map(r=>r.actions.map((a,i)=>({ type:"pair", hand:r.hand, dealer:DEALER_UPCARDS[i], correct:a }))).flat(),
 ];
 
-const MODES = ["Guide","Count","Strategy","Speed","Simulate"];
+const MODES = ["Guide","Strategy","Count","Speed","Simulate"];
 
 // ─── SIMULATE HELPERS ────────────────────────────────────────
 const simBuildShoe = () => {

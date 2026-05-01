@@ -240,6 +240,8 @@ export default function BlackjackTrainer() {
   // ── Simulate mode
   const [sim, setSim]           = useState(SIM0);
   const [simReveal, setSimReveal] = useState(false);
+  const [simSpeed, setSimSpeed]   = useState(1); // 0=slow 1=medium 2=game
+  const [speedMode, setSpeedMode] = useState(1); // 0=slow 1=medium 2=game
 
   // ── COUNT LOGIC ──
   const dealCards = useCallback(() => {
@@ -263,9 +265,10 @@ export default function BlackjackTrainer() {
   // ── SPEED LOGIC ──
   useEffect(() => {
     if (mode!=="Speed"||speedResult!==null||speedIndex>=speedCards.length) return;
-    const t = setTimeout(()=>setSpeedIndex(i=>i+1), 750);
+    const ms = [1200, 750, 300][speedMode];
+    const t = setTimeout(()=>setSpeedIndex(i=>i+1), ms);
     return ()=>clearTimeout(t);
-  }, [mode, speedIndex, speedCards, speedResult]);
+  }, [mode, speedIndex, speedCards, speedResult, speedMode]);
 
   const startSpeed = () => {
     const nc = Array.from({ length:10 }, randomCard);
@@ -309,10 +312,11 @@ export default function BlackjackTrainer() {
 
   useEffect(() => {
     if (mode!=='Simulate' || !sim.active) return;
-    const delay = sim.phase==='result' ? 1500 : 400;
+    const tick = [800, 400, 120][simSpeed];
+    const delay = sim.phase==='result' ? [2000, 1500, 800][simSpeed] : tick;
     const t = setTimeout(() => setSim(simAdvance), delay);
     return () => clearTimeout(t);
-  }, [sim, mode]);
+  }, [sim, mode, simSpeed]);
 
   const submitDevQuiz = () => {
     if (!devScenario||devInput===null||devTCInput==="") return;
@@ -327,7 +331,7 @@ export default function BlackjackTrainer() {
 
   // ── CHART RENDERER ──
   const renderChart = (rows) => (
-    <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch", width:"100%", maxWidth:700 }}>
+    <div style={{ overflowX:"auto", WebkitOverflowScrolling:"touch", width:"100%", maxWidth:700, margin:"0 auto" }}>
       <table style={{ borderCollapse:"collapse", fontSize:13, minWidth:310, width:"100%" }}>
         <thead>
           <tr>
@@ -884,7 +888,17 @@ export default function BlackjackTrainer() {
             <span style={{ color:"#778a80" }}>STREAK: <span style={{ color:"#ffd700" }}>{streak}</span></span>
             <span style={{ color:"#778a80" }}>BEST: <span style={{ color:"#ffd700" }}>{bestStreak}</span></span>
           </div>
-          <div style={{ fontSize:13, color:"#778a80", marginBottom:14 }}>10 cards auto-flip. Track the count. Submit at the end.</div>
+          <div style={{ fontSize:13, color:"#778a80", marginBottom:10 }}>10 cards auto-flip. Track the count. Submit at the end.</div>
+          <div style={{ display:"flex", gap:6, justifyContent:"center", marginBottom:14 }}>
+            {["SLOW","MED","GAME"].map((lbl,i)=>(
+              <button key={i} onClick={()=>setSpeedMode(i)} style={{
+                padding:"5px 14px", borderRadius:5, border:"none", cursor:"pointer",
+                background:speedMode===i?"#ffd700":"#0d1810",
+                color:speedMode===i?"#070c0a":"#778a80",
+                fontFamily:"'Courier New',monospace", fontWeight:900, fontSize:11,
+              }}>{lbl}</button>
+            ))}
+          </div>
           <div style={{ height:220, display:"flex", alignItems:"center", justifyContent:"center", marginTop:8, marginBottom:14, position:"relative" }}>
             {speedCards.length>0 && speedIndex<speedCards.length && speedResult===null ? (
               <div key={speedIndex} style={{
@@ -1005,6 +1019,16 @@ export default function BlackjackTrainer() {
                 background:'transparent',color:'#778a80',
                 fontFamily:"'Courier New',monospace",fontWeight:900,fontSize:13,
               }}>RESET</button>
+              <div style={{display:'flex',gap:5,alignItems:'center'}}>
+                {["SLOW","MED","GAME"].map((lbl,i)=>(
+                  <button key={i} onClick={()=>setSimSpeed(i)} style={{
+                    padding:'5px 12px',borderRadius:5,border:'none',cursor:'pointer',
+                    background:simSpeed===i?'#ffd700':'#0d1810',
+                    color:simSpeed===i?'#070c0a':'#778a80',
+                    fontFamily:"'Courier New',monospace",fontWeight:900,fontSize:11,
+                  }}>{lbl}</button>
+                ))}
+              </div>
               {sim.hc>0&&<span style={{fontSize:12,color:'#778a80'}}>HAND #{sim.hc}</span>}
             </div>
 

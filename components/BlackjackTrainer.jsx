@@ -733,7 +733,7 @@ export default function BlackjackTrainer() {
 
               {/* Regular charts */}
               {stratTab!=="deviations" && (
-                <div style={{ background:"#090e0b", border:"1px solid #141e16", borderRadius:10, padding:12 }}>
+                <div style={{ background:"#090e0b", border:"1px solid #141e16", borderRadius:10, padding:12, maxWidth:724, margin:"0 auto", width:"100%" }}>
                   <div style={{ fontSize:12, color:"#778a80", marginBottom:8, textAlign:"center", letterSpacing:"0.2em" }}>DEALER UPCARD →</div>
                   {stratTab==="hard"  && renderChart(HARD_TOTALS)}
                   {stratTab==="soft"  && renderChart(SOFT_TOTALS)}
@@ -832,7 +832,7 @@ export default function BlackjackTrainer() {
                   )}
 
                   {/* Deviation table */}
-                  <div style={{ background:"#090e0b", border:"1px solid #141e16", borderRadius:10, overflow:"hidden" }}>
+                  <div style={{ background:"#090e0b", border:"1px solid #141e16", borderRadius:10, overflow:"hidden", maxWidth:724, margin:"0 auto", width:"100%" }}>
                     <div style={{ overflowX:"auto" }}>
                       <table style={{ borderCollapse:"collapse", width:"100%", fontSize:13 }}>
                         <thead>
